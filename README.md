@@ -12,7 +12,7 @@ Trajectix implements the Agentic Flight Recorder (AFR) specification, a forensic
 git clone https://github.com/trajectix-ai/trajectix-afr-.git
 cd trajectix-demo
 python3 -m venv venv
-source ~/Desktop/trajectix-demo/venv/bin/activate
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
