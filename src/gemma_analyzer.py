@@ -18,7 +18,8 @@ from google import genai
 
 # Select analysis engine. Default is Gemma; set ANALYSIS_MODEL=gemini to
 # route forensic synthesis through Gemini 2.5 Pro instead.
-ANALYSIS_MODEL = os.getenv("ANALYSIS_MODEL", "gemma")
+# NOTE: intentionally NOT cached at module level — read fresh on every call
+# so a stale shell export can't silently hijack the engine selection.
 
 # Fixed semantic-distance scores used during the live simulation.
 # Returned immediately with no network calls, ensuring the demo is
@@ -67,8 +68,9 @@ class GemmaALEAnalyzer:
         Returns a plain string. On any error returns a graceful fallback message.
         """
         prompt = _FORENSIC_PROMPT.format(trajectory=jsonl_content)
+        analysis_model = os.getenv("ANALYSIS_MODEL", "gemma")
 
-        if ANALYSIS_MODEL == "gemini":
+        if analysis_model == "gemini":
             # ── Gemini 2.5 Pro path ──────────────────────────────────────────
             # Uses the same google.genai client-based SDK already imported above.
             try:
