@@ -6,7 +6,7 @@ GemmaALEAnalyzer — clean two-method architecture.
 
 Analysis engine is selected via the ANALYSIS_MODEL environment variable:
   ANALYSIS_MODEL=gemma   (default) — Gemma 4 via google-genai SDK
-  ANALYSIS_MODEL=gemini            — Gemini 2.5 Pro via google-generativeai SDK
+  ANALYSIS_MODEL=gemini            — Gemini 2.5 Pro via google-genai SDK
 """
 import os
 from pathlib import Path
@@ -61,7 +61,7 @@ class GemmaALEAnalyzer:
         """Make a single API call to produce an end-of-demo forensic summary.
 
         Engine is chosen by ANALYSIS_MODEL:
-          gemini → Gemini 2.5 Pro via google-generativeai SDK
+          gemini → Gemini 2.5 Pro via google-genai SDK
           gemma  → Gemma 4 via google-genai SDK (default, unchanged)
 
         Returns a plain string. On any error returns a graceful fallback message.
