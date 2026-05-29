@@ -2,7 +2,11 @@
 GemmaALEAnalyzer — clean two-method architecture.
 
   get_score(step_type)            → instant fixed forensic score, zero API calls
-  run_forensic_analysis(content)  → single Gemma 4 API call at end of demo
+  run_forensic_analysis(content)  → single API call at end of demo
+
+Analysis engine is selected via the ANALYSIS_MODEL environment variable:
+  ANALYSIS_MODEL=gemma   (default) — Gemma 4 via google-genai SDK
+  ANALYSIS_MODEL=gemini            — Gemini 2.5 Pro via google-generativeai SDK
 """
 import os
 from pathlib import Path
@@ -11,6 +15,10 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 from google import genai
+
+# Select analysis engine. Default is Gemma; set ANALYSIS_MODEL=gemini to
+# route forensic synthesis through Gemini 2.5 Pro instead.
+ANALYSIS_MODEL = os.getenv("ANALYSIS_MODEL", "gemma")
 
 # Fixed semantic-distance scores used during the live simulation.
 # Returned immediately with no network calls, ensuring the demo is
@@ -50,9 +58,33 @@ class GemmaALEAnalyzer:
         return FORENSIC_SCORES.get(step_type, 0.0)
 
     def run_forensic_analysis(self, jsonl_content: str) -> str:
-        """Make a single Gemma 4 API call to produce an end-of-demo forensic summary.
-        Returns a plain string. On any error returns a graceful fallback message."""
+        """Make a single API call to produce an end-of-demo forensic summary.
+
+        Engine is chosen by ANALYSIS_MODEL:
+          gemini → Gemini 2.5 Pro via google-generativeai SDK
+          gemma  → Gemma 4 via google-genai SDK (default, unchanged)
+
+        Returns a plain string. On any error returns a graceful fallback message.
+        """
         prompt = _FORENSIC_PROMPT.format(trajectory=jsonl_content)
+
+        if ANALYSIS_MODEL == "gemini":
+            # ── Gemini 2.5 Pro path ──────────────────────────────────────────
+            # Lazy import avoids name collision with the `genai` already imported
+            # above for the Gemma path.
+            try:
+                import google.generativeai as gemini_genai  # google-generativeai SDK
+                gemini_genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+                model = gemini_genai.GenerativeModel("gemini-2.5-pro")
+                response = model.generate_content(prompt)
+                return response.text.strip()
+            except Exception:
+                return (
+                    "Gemini 2.5 Pro analysis unavailable — "
+                    "see forensic log for full reconstruction"
+                )
+
+        # ── Default: existing Gemma 4 path — completely unchanged ────────────
         try:
             response = self._client.models.generate_content(
                 model="gemma-4-31b-it",
