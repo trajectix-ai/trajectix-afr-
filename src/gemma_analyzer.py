@@ -70,13 +70,13 @@ class GemmaALEAnalyzer:
 
         if ANALYSIS_MODEL == "gemini":
             # ── Gemini 2.5 Pro path ──────────────────────────────────────────
-            # Lazy import avoids name collision with the `genai` already imported
-            # above for the Gemma path.
+            # Uses the same google.genai client-based SDK already imported above.
             try:
-                import google.generativeai as gemini_genai  # google-generativeai SDK
-                gemini_genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-                model = gemini_genai.GenerativeModel("gemini-2.5-pro")
-                response = model.generate_content(prompt)
+                client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+                response = client.models.generate_content(
+                    model="gemini-2.5-pro-preview-05-06",
+                    contents=prompt,
+                )
                 return response.text.strip()
             except Exception:
                 return (
