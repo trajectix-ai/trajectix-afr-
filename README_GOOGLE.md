@@ -54,8 +54,8 @@ chain entries by step ID.
 
 ```bash
 # Clone and install
-git clone https://github.com/trajectix-ai/trajectix-afr
-cd trajectix-afr
+git clone https://github.com/trajectix-ai/trajectix-afr-
+cd trajectix-afr-
 git checkout google-for-startups
 pip install -r requirements.txt
 pip install google-genai
