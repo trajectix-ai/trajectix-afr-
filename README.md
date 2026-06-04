@@ -1,5 +1,3 @@
-> **Google for Startups AI Agents Challenge submission:** See [README_GOOGLE.md](./README_GOOGLE.md) — Gemini 2.5 Flash branch.
-
 # Trajectix — Agentic Flight Recorder (AFR)
 
 ### Autonomous Logic Escalation Detection for AI Infrastructure Safety
