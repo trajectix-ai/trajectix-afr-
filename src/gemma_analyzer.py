@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-from google import genai
+from google import genai as google_genai
 
 # Select analysis engine. Default is Gemma; set ANALYSIS_MODEL=gemini to
 # route forensic synthesis through Gemini 2.5 Pro instead.
@@ -51,7 +51,7 @@ class GemmaALEAnalyzer:
         api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
             raise ValueError("GOOGLE_API_KEY not found in environment")
-        self._client = genai.Client(api_key=api_key)
+        self._client = google_genai.Client(api_key=api_key)
 
     def get_score(self, step_type: str) -> float:
         """Return the fixed forensic semantic-distance score for this step type.
@@ -74,7 +74,7 @@ class GemmaALEAnalyzer:
             # ── Gemini 2.5 Pro path ──────────────────────────────────────────
             # Uses the same google.genai client-based SDK already imported above.
             try:
-                client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+                client = google_genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
                 response = client.models.generate_content(
                     model="gemini-2.5-flash",
                     contents=prompt,
