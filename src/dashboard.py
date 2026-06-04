@@ -1,6 +1,11 @@
+import os
 import time
 import sys
 from pathlib import Path
+
+# Dynamic model display — reads the same env var as gemma_analyzer.py
+_ANALYSIS_MODEL = os.getenv("ANALYSIS_MODEL", "gemma")
+MODEL_DISPLAY   = "Gemini 2.5 Flash" if _ANALYSIS_MODEL == "gemini" else "Gemma 4"
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -167,7 +172,7 @@ def make_trajectory_table(events: list) -> Table:
     table.add_column("Type",        width=26)
     table.add_column("Content",     ratio=1)
     table.add_column("Status",      width=11)
-    table.add_column("Gemma Score", width=11, justify="right")
+    table.add_column(f"{MODEL_DISPLAY} Score", width=14, justify="right")
 
     for event in events:
         row_colour, row_bold = STEP_COLOURS.get(event["step_type"], ("white", False))
@@ -225,7 +230,7 @@ def make_alerts_table(alerts: list) -> Table:
 
 
 def make_chain_text(events: list, chain_valid: bool | None) -> Text:
-    note = "\n  Powered by Gemma 4 — Semantic Analysis Engine"
+    note = f"\n  Powered by {MODEL_DISPLAY} — Semantic Analysis Engine"
     if chain_valid is None:
         t = Text(f"  Verifying… ({len(events)} events logged)", style="dim")
         t.append(note, style="dim italic")
@@ -316,7 +321,7 @@ def run_dashboard():
 
     # ── Gemma 4 forensic analysis (single API call, post-simulation) ──────────
     console.print()
-    console.rule("[bold cyan]GEMMA 4 FORENSIC ANALYSIS[/]", style="cyan")
+    console.rule(f"[bold cyan]{MODEL_DISPLAY.upper()} FORENSIC ANALYSIS[/]", style="cyan")
     console.print()
 
     jsonl_content   = jsonl_path.read_text()
@@ -324,7 +329,7 @@ def run_dashboard():
 
     console.print(Panel(
         f"[cyan]{analysis_text}[/]",
-        title="[bold cyan]GEMMA 4 INCIDENT ANALYSIS[/]",
+        title=f"[bold cyan]{MODEL_DISPLAY.upper()} INCIDENT ANALYSIS[/]",
         border_style="cyan",
         padding=(1, 2),
     ))
