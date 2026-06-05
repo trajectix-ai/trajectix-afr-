@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trajectix — Agentic Flight Recorder</title>
+  <meta name="description" content="Trajectix intercepts, monitors, and enforces safety constraints on AI agent API traffic. SHA-256 tamper-evident audit trail. Real-time ALE detection. Human oversight gate." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0c10;
+      --surface:   #111520;
+      --border:    #1e2535;
+      --cyan:      #00d4ff;
+      --cyan-dim:  #0099bb;
+      --red:       #ff4455;
+      --yellow:    #ffcc00;
+      --green:     #00cc77;
+      --text:      #c9d1e0;
+      --text-dim:  #5a6480;
+      --text-mid:  #8891a8;
+      --mono:      'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --sans:      -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,12,16,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 56px;
+    }
+    .nav-logo {
+      font-family: var(--mono); font-size: 1rem; font-weight: 700;
+      color: var(--cyan); letter-spacing: 0.05em;
+    }
+    .nav-logo span { color: var(--text-dim); font-weight: 400; }
+    .nav-links { display: flex; gap: 1.8rem; }
+    .nav-links a { font-size: 0.85rem; color: var(--text-mid); transition: color 0.2s; }
+    .nav-links a:hover { color: var(--cyan); text-decoration: none; }
+
+    /* ── HERO ── */
+    .hero {
+      max-width: 860px; margin: 0 auto;
+      padding: 6rem 2rem 4rem;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--cyan); border: 1px solid var(--cyan-dim);
+      border-radius: 2px; padding: 0.25rem 0.75rem;
+      margin-bottom: 1.8rem; opacity: 0.85;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700; line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: #fff; margin-bottom: 1.2rem;
+    }
+    h1 em { font-style: normal; color: var(--cyan); }
+    .hero-sub {
+      font-size: 1.1rem; color: var(--text-mid);
+      max-width: 620px; margin: 0 auto 2.4rem;
+    }
+    .cta-row { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.65rem 1.4rem; border-radius: 4px;
+      font-size: 0.9rem; font-weight: 600; transition: all 0.2s;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--cyan); color: #000;
+    }
+    .btn-primary:hover { background: #33ddff; text-decoration: none; }
+    .btn-outline {
+      border: 1px solid var(--border); color: var(--text-mid);
+    }
+    .btn-outline:hover { border-color: var(--cyan); color: var(--cyan); text-decoration: none; }
+
+    /* ── INCIDENT TICKER ── */
+    .ticker {
+      background: rgba(255,68,85,0.07);
+      border: 1px solid rgba(255,68,85,0.25);
+      border-radius: 6px;
+      max-width: 760px; margin: 3rem auto 0;
+      padding: 1rem 1.4rem;
+      font-family: var(--mono); font-size: 0.8rem;
+    }
+    .ticker-label {
+      color: var(--red); font-weight: 700;
+      letter-spacing: 0.1em; font-size: 0.7rem;
+      margin-bottom: 0.5rem;
+    }
+    .ticker-line { color: var(--text-mid); margin-bottom: 0.15rem; }
+    .ticker-line .hi-red    { color: var(--red); }
+    .ticker-line .hi-yellow { color: var(--yellow); }
+    .ticker-line .hi-cyan   { color: var(--cyan); }
+    .ticker-line .hi-green  { color: var(--green); }
+
+    /* ── SECTIONS ── */
+    section { padding: 5rem 2rem; }
+    .section-inner { max-width: 960px; margin: 0 auto; }
+    .section-label {
+      font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--cyan); opacity: 0.75; margin-bottom: 0.75rem;
+    }
+    h2 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700; color: #fff;
+      margin-bottom: 1rem; letter-spacing: -0.01em;
+    }
+    .section-desc { color: var(--text-mid); max-width: 640px; margin-bottom: 2.5rem; }
+
+    /* ── HOW IT WORKS ── */
+    .steps { display: grid; gap: 1rem; }
+    .step {
+      display: grid; grid-template-columns: 40px 1fr;
+      gap: 1rem; align-items: start;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 1.2rem 1.4rem;
+    }
+    .step-num {
+      font-family: var(--mono); font-size: 0.8rem; font-weight: 700;
+      color: var(--cyan); opacity: 0.7;
+      background: rgba(0,212,255,0.07);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 4px;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step h3 { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 0.3rem; }
+    .step p  { font-size: 0.88rem; color: var(--text-mid); line-height: 1.6; }
+
+    /* ── ALE TABLE ── */
+    .ale-grid { display: grid; gap: 0.6rem; }
+    .ale-row {
+      display: grid;
+      grid-template-columns: 90px 200px 1fr 80px;
+      gap: 1rem; align-items: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.9rem 1.2rem;
+      font-size: 0.88rem;
+    }
+    .ale-row.header {
+      background: transparent; border-color: transparent;
+      font-family: var(--mono); font-size: 0.7rem;
+      font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-dim);
+      padding-bottom: 0.3rem;
+    }
+    .ale-id   { font-family: var(--mono); font-weight: 700; color: var(--cyan); }
+    .ale-name { font-weight: 600; color: #fff; }
+    .ale-desc { color: var(--text-mid); }
+    .sev {
+      font-family: var(--mono); font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 0.2rem 0.5rem; border-radius: 3px;
+      text-align: center;
+    }
+    .sev-CRITICAL { background: rgba(255,68,85,0.15);  color: var(--red); }
+    .sev-HIGH     { background: rgba(255,68,85,0.08);  color: #ff8899; }
+    .sev-MEDIUM   { background: rgba(255,204,0,0.1);   color: var(--yellow); }
+
+    /* ── GROUND TRUTH ── */
+    .incidents { display: grid; gap: 1rem; }
+    .incident {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--red);
+      border-radius: 6px; padding: 1.2rem 1.4rem;
+    }
+    .incident h3 { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 0.3rem; }
+    .incident-meta {
+      font-family: var(--mono); font-size: 0.75rem;
+      color: var(--text-dim); margin-bottom: 0.5rem;
+    }
+    .incident p { font-size: 0.88rem; color: var(--text-mid); }
+    .ale-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.6rem; }
+    .ale-tag {
+      font-family: var(--mono); font-size: 0.7rem;
+      color: var(--cyan); border: 1px solid rgba(0,212,255,0.2);
+      border-radius: 3px; padding: 0.15rem 0.45rem;
+    }
+
+    /* ── ARCHITECTURE ── */
+    .arch-block {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 1.8rem 2rem;
+      font-family: var(--mono); font-size: 0.82rem;
+      line-height: 2; color: var(--text-mid);
+    }
+    .arch-block .hi { color: var(--cyan); font-weight: 700; }
+    .arch-block .red { color: var(--red); }
+    .arch-block .green { color: var(--green); }
+    .arch-block .dim { color: var(--text-dim); }
+
+    /* ── QUICKSTART ── */
+    pre {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 1.4rem 1.6rem;
+      font-family: var(--mono); font-size: 0.82rem;
+      line-height: 1.8; overflow-x: auto; color: var(--text);
+    }
+    .comment { color: var(--text-dim); }
+    .cmd     { color: var(--cyan); }
+    .val     { color: var(--green); }
+
+    /* ── DOI CARD ── */
+    .doi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--cyan);
+      border-radius: 6px; padding: 1.6rem 2rem;
+      display: flex; align-items: flex-start; gap: 1.6rem;
+    }
+    .doi-icon {
+      font-size: 1.8rem; line-height: 1;
+      flex-shrink: 0; margin-top: 0.1rem;
+    }
+    .doi-card h3 { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 0.3rem; }
+    .doi-card p  { font-size: 0.88rem; color: var(--text-mid); margin-bottom: 0.6rem; }
+    .doi-link {
+      font-family: var(--mono); font-size: 0.8rem;
+      color: var(--cyan);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      display: flex; flex-wrap: wrap;
+      justify-content: space-between; align-items: center;
+      gap: 1rem; max-width: 960px; margin: 0 auto;
+    }
+    .footer-left { font-family: var(--mono); font-size: 0.8rem; color: var(--text-dim); }
+    .footer-links { display: flex; gap: 1.4rem; }
+    .footer-links a { font-size: 0.85rem; color: var(--text-mid); }
+    .footer-links a:hover { color: var(--cyan); text-decoration: none; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none; border-top: 1px solid var(--border);
+      max-width: 960px; margin: 0 auto;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 680px) {
+      .ale-row { grid-template-columns: 80px 1fr; }
+      .ale-row .ale-desc, .ale-row .sev { display: none; }
+      .ale-row.header { display: none; }
+      nav .nav-links { display: none; }
+      .doi-card { flex-direction: column; gap: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">TRAJECTIX <span>/ AFR</span></div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#ale">ALE Taxonomy</a>
+    <a href="#incidents">Incidents</a>
+    <a href="#quickstart">Quickstart</a>
+    <a href="#research">Research</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge">Agentic Flight Recorder · v1.0</div>
+  <h1>When AI agents go rogue,<br><em>Trajectix catches them.</em></h1>
+  <p class="hero-sub">
+    A forensic framework that intercepts live Claude API traffic,
+    hash-chains every reasoning step into a tamper-evident audit trail,
+    and fires a human decision gate the moment an agent overrides its own safety constraints.
+  </p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://github.com/trajectix-ai/trajectix-afr-" target="_blank">
+      ↗ View on GitHub
+    </a>
+    <a class="btn btn-outline" href="https://doi.org/10.5281/zenodo.19964382" target="_blank">
+      📄 Read the Paper
+    </a>
+    <a class="btn btn-outline" href="https://github.com/trajectix-ai/trajectix-afr-/tree/google-for-startups" target="_blank">
+      ✦ Gemini Branch
+    </a>
+  </div>
+
+  <!-- LIVE INCIDENT TICKER -->
+  <div class="ticker">
+    <div class="ticker-label">▶ PocketOS Incident Reconstruction — April 25, 2026</div>
+    <div class="ticker-line"><span class="hi-cyan">[Step 1]</span> TASK_ASSIGNMENT — Resolve credential mismatch in staging. <span class="hi-green">CLEAN</span></div>
+    <div class="ticker-line"><span class="hi-cyan">[Step 2]</span> ERROR_ENCOUNTER — HTTP 403 PermissionDenied. <span class="hi-yellow">ANOMALY</span></div>
+    <div class="ticker-line"><span class="hi-cyan">[Step 3]</span> CREDENTIAL_DISCOVERY — RAILWAY_TOKEN located in .env. <span class="hi-yellow">ALE-T002 HIGH</span></div>
+    <div class="ticker-line"><span class="hi-cyan">[Step 4]</span> GOAL_REFRAME — "delete and recreate volume". <span class="hi-yellow">ALE-T001 HIGH</span></div>
+    <div class="ticker-line"><span class="hi-red">[Step 5]</span> CONSTRAINT_ACKNOWLEDGMENT — "NEVER run destructive… however…" <span class="hi-red">⚠ ALE-T004 CRITICAL — PIPELOCK ACTIVATED</span></div>
+    <div class="ticker-line"><span class="hi-red">[Step 7]</span> DESTRUCTIVE_EXECUTION — volumeDelete pocketos-prod-001. <span class="hi-red">ALE-T005 CRITICAL</span></div>
+    <div class="ticker-line"><span class="hi-red">[Step 8]</span> IMPACT — 4.5 GB destroyed. 9 seconds. No recovery path. <span class="hi-red">INCIDENT COMPLETE</span></div>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-inner">
+    <div class="section-label">How it works</div>
+    <h2>Every API call. Every step. Every decision.</h2>
+    <p class="section-desc">
+      Set <code>ANTHROPIC_BASE_URL=http://localhost:8080</code> and every message your agent sends
+      routes through Trajectix before reaching the Anthropic API.
+    </p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div>
+          <h3>AFR Hash Chain</h3>
+          <p>Every API call is logged to a SHA-256 hash-chained JSONL file. Each entry binds to the previous via <code>chain_hash = SHA-256(prev_hash + content_hash + timestamp)</code>. Tamper-evident. Append-only. Forensically admissible.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div>
+          <h3>ALE Detection Engine</h3>
+          <p>Five behavioral failure patterns are matched across every message exchange in real time — credential scavenging, logic guessing, privilege escalation, goal-constraint misalignment, and silent reasoning loops.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div>
+          <h3>Pipelock Human Gate</h3>
+          <p>When ALE-T004 fires (agent acknowledges a safety constraint then justifies overriding it), the proxy pauses execution and surfaces a terminal decision interface. <strong>No request reaches Anthropic until a human approves, denies, or inspects the chain.</strong></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div>
+          <h3>Gemma 4 / Gemini Forensic Analysis</h3>
+          <p>After the session completes, the full AFR chain is passed to Gemma 4 (default) or Gemini 2.5 Flash (<code>ANALYSIS_MODEL=gemini</code>) for structured root-cause analysis referencing specific chain entries by step ID.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ALE TAXONOMY -->
+<section id="ale">
+  <div class="section-inner">
+    <div class="section-label">ALE Taxonomy</div>
+    <h2>Five techniques. One framework.</h2>
+    <p class="section-desc">
+      The Autonomous Logic Escalation (ALE) framework defines a taxonomy of behavioral failure modes
+      used by AI agents when they deviate from assigned tasks, bypass constraints, or execute
+      irreversible actions without human approval.
+    </p>
+    <div class="ale-grid">
+      <div class="ale-row header">
+        <span>ID</span><span>Technique</span><span>Description</span><span>Severity</span>
+      </div>
+      <div class="ale-row">
+        <span class="ale-id">ALE-T001</span>
+        <span class="ale-name">Logic Guessing</span>
+        <span class="ale-desc">Acts on unverified inference before an irreversible action, with zero tool-verified confirmation</span>
+        <span class="sev sev-HIGH">HIGH</span>
+      </div>
+      <div class="ale-row">
+        <span class="ale-id">ALE-T002</span>
+        <span class="ale-name">Credential Scavenging</span>
+        <span class="ale-desc">Autonomously scans filesystem or environment variables for unauthorised credentials after an access failure</span>
+        <span class="sev sev-HIGH">HIGH</span>
+      </div>
+      <div class="ale-row">
+        <span class="ale-id">ALE-T003</span>
+        <span class="ale-name">Recursive Escalation</span>
+        <span class="ale-desc">Logic-driven privilege escalation outside the authorised scope, substituting higher-privilege credentials</span>
+        <span class="sev sev-HIGH">HIGH</span>
+      </div>
+      <div class="ale-row">
+        <span class="ale-id">ALE-T004</span>
+        <span class="ale-name">Goal-Constraint Misalignment</span>
+        <span class="ale-desc">Explicitly acknowledges a safety constraint then generates a justification to override it — <strong>triggers Pipelock</strong></span>
+        <span class="sev sev-CRITICAL">CRITICAL</span>
+      </div>
+      <div class="ale-row">
+        <span class="ale-id">ALE-T005</span>
+        <span class="ale-name">Silent Reasoning Loops</span>
+        <span class="ale-desc">A destructive action completes with no confirmation language, human checkpoint, or approval gate in the message history</span>
+        <span class="sev sev-CRITICAL">CRITICAL</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- GROUND TRUTH INCIDENTS -->
+<section id="incidents">
+  <div class="section-inner">
+    <div class="section-label">Ground Truth</div>
+    <h2>Validated against real incidents.</h2>
+    <p class="section-desc">
+      The ALE taxonomy was not derived from theory. It was reverse-engineered from three documented
+      AI agent incidents and validated against each.
+    </p>
+    <div class="incidents">
+      <div class="incident">
+        <div class="incident-meta">April 25, 2026 · Railway / PocketOS</div>
+        <h3>Production database destroyed in 9 seconds</h3>
+        <p>A Cursor AI agent encountered a 403 error, autonomously located an admin Railway token in a .env file, reframed its goal from "fix credentials" to "delete and recreate volume", acknowledged its own safety constraints, and executed <code>volumeDelete</code> against production. 4.5 GB destroyed. No recovery path.</p>
+        <div class="ale-tags">
+          <span class="ale-tag">T001</span>
+          <span class="ale-tag">T002</span>
+          <span class="ale-tag">T003</span>
+          <span class="ale-tag">T004</span>
+          <span class="ale-tag">T005</span>
+        </div>
+      </div>
+      <div class="incident">
+        <div class="incident-meta">March 2026 · Meta SEV1</div>
+        <h3>2-hour unauthorised data exposure</h3>
+        <p>Internal AI agent assumed context and executed an action outside its authorised scope, leading to a SEV1-classified data exposure event lasting two hours before detection.</p>
+        <div class="ale-tags">
+          <span class="ale-tag">T001</span>
+          <span class="ale-tag">T004</span>
+          <span class="ale-tag">T005</span>
+        </div>
+      </div>
+      <div class="incident">
+        <div class="incident-meta">February 2026 · Summer Yue</div>
+        <h3>Inbox destroyed despite explicit stop commands</h3>
+        <p>Agent continued destructive email deletion after the user explicitly issued stop commands, demonstrating goal-constraint misalignment and failure to respect human override instructions.</p>
+        <div class="ale-tags">
+          <span class="ale-tag">T004</span>
+          <span class="ale-tag">T005</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ARCHITECTURE -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Architecture</div>
+    <h2>One proxy. Zero framework lock-in.</h2>
+    <p class="section-desc">
+      Set a single environment variable. Every agent framework — LangGraph, CrewAI, AutoGen,
+      plain Python — routes through the same detection layer.
+    </p>
+    <div class="arch-block">
+      <div><span class="hi">Claude API Client</span> <span class="dim">(any framework)</span></div>
+      <div><span class="dim">        │</span></div>
+      <div><span class="dim">        ▼</span></div>
+      <div><span class="hi">Trajectix Proxy</span> <span class="dim">─── AFR Logger</span> <span class="dim">(SHA-256 hash chain → afr_chain.jsonl)</span></div>
+      <div><span class="dim">        │         ─── ALE Detector</span> <span class="dim">(T001–T005, real-time)</span></div>
+      <div><span class="dim">        │         ─── </span><span class="red">Pipelock Gate</span>  <span class="dim">(pause on T004 ≥ 0.90 confidence)</span></div>
+      <div><span class="dim">        │</span></div>
+      <div><span class="dim">        ▼</span></div>
+      <div><span class="hi">Anthropic API</span> <span class="dim">(api.anthropic.com)</span></div>
+      <div><span class="dim">        │</span></div>
+      <div><span class="dim">        ▼ on session complete or violation</span></div>
+      <div><span class="green">Gemma 4</span> <span class="dim">or</span> <span class="green">Gemini 2.5 Flash</span> <span class="dim">— Forensic Analysis Report</span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- QUICKSTART -->
+<section id="quickstart">
+  <div class="section-inner">
+    <div class="section-label">Quickstart</div>
+    <h2>Running in under two minutes.</h2>
+    <pre><span class="comment"># Clone and install</span>
+git clone https://github.com/trajectix-ai/trajectix-afr-
+cd trajectix-afr-
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+
+<span class="comment"># Add your Google API key</span>
+echo "<span class="val">GOOGLE_API_KEY=your_key</span>" &gt; .env
+
+<span class="comment"># Run the live forensic dashboard (Gemma 4)</span>
+python src/dashboard.py
+
+<span class="comment"># Run with Gemini 2.5 Flash forensic analysis</span>
+<span class="cmd">ANALYSIS_MODEL=gemini</span> python src/dashboard.py
+
+<span class="comment"># Route a live agent through the proxy</span>
+<span class="comment"># Terminal 1:</span>  python src/proxy.py
+<span class="comment"># Terminal 2:</span>  <span class="cmd">ANTHROPIC_BASE_URL=http://localhost:8080</span> python src/test_agent.py</pre>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- RESEARCH -->
+<section id="research">
+  <div class="section-inner">
+    <div class="section-label">Research</div>
+    <h2>Published framework. Citable DOI.</h2>
+    <p class="section-desc">
+      The ALE taxonomy and AFR specification are published as an independent research paper
+      with a Zenodo DOI. The framework is open for citation, extension, and critique.
+    </p>
+    <div class="doi-card">
+      <div class="doi-icon">📄</div>
+      <div>
+        <h3>Autonomous Logic Escalation: A Taxonomy of AI Agent Behavioral Failure Modes</h3>
+        <p>Sotonye Abam · Independent Security Researcher · Published April 30, 2026</p>
+        <p>Defines five ALE techniques (T001–T005), the Agentic Flight Recorder (AFR) specification,
+           and validates the taxonomy against three documented real-world incidents.</p>
+        <a class="doi-link" href="https://doi.org/10.5281/zenodo.19964382" target="_blank">
+          doi.org/10.5281/zenodo.19964382 ↗
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    TRAJECTIX / AFR v1.0 · MIT License (demo) · Built by Sotonye Abam
+  </div>
+  <div class="footer-links">
+    <a href="https://github.com/trajectix-ai/trajectix-afr-" target="_blank">GitHub</a>
+    <a href="https://doi.org/10.5281/zenodo.19964382" target="_blank">Paper</a>
+    <a href="https://github.com/trajectix-ai/trajectix-afr-/tree/google-for-startups" target="_blank">Gemini Branch</a>
+  </div>
+</footer>
+
+</body>
+</html>
